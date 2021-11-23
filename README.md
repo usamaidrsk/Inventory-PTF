@@ -1,4 +1,4 @@
-# invetory-ptf
+# inventory-ptf
 
 ## Project setup
 ```

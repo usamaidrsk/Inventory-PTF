@@ -1,17 +1,24 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <n-config-provider :locale="enUS" :date-locale="dateEnUS">
+    <router-view></router-view>
+  </n-config-provider>
 </template>
 
-<script>
-import HelloWorld from './components/HelloWorld.vue'
+<script lang="ts">
+import { Options, Vue } from 'vue-class-component';
+import { enUS, dateEnUS } from 'naive-ui'
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
+@Options({
+  components: {},
+  data: function () {
+    return {
+      enUS: enUS,
+      dateEnUS: dateEnUS,
+    }
   }
-}
+})
+
+export default class App extends Vue {}
 </script>
 
 <style>
