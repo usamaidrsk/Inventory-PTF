@@ -1,6 +1,11 @@
 <template>
   <n-config-provider :locale="enUS" :date-locale="dateEnUS">
+    <n-message-provider>
+      <div class="spinnerStyles" v-if="$store.state.spinner.isSpinning">
+        <n-spin size="large" :show="$store.state.spinner.isSpinning"/>
+      </div>
     <router-view></router-view>
+    </n-message-provider>
   </n-config-provider>
 </template>
 
@@ -15,7 +20,7 @@ import { enUS, dateEnUS } from 'naive-ui'
       enUS: enUS,
       dateEnUS: dateEnUS,
     }
-  }
+  },
 })
 
 export default class App extends Vue {}
@@ -26,8 +31,13 @@ export default class App extends Vue {}
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+}
+.spinnerStyles {
+  position: fixed;
+  width: 98%;
+  padding-top: 1em;
+  display: flex;
+  justify-content: right;
 }
 </style>
