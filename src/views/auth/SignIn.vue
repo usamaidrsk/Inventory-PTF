@@ -27,6 +27,7 @@
                 </router-link>
                 <n-button
                     style="margin-left: 1em;"
+                    :disabled="loading"
                     @click.prevent="signIn()"
                     type="primary"
                 >
@@ -51,6 +52,7 @@ export default defineComponent({
     const message = useMessage()
     return {
       formRef,
+      loading: false,
       size: ref('medium'),
       formValue: ref({
         username: '',
@@ -75,12 +77,15 @@ export default defineComponent({
       this.formRef.validate(async (errors) => {
         if (!errors) {
           this.setSpinner(true)
+          this.loading = true
           try {
             await this.axios.post("auth/", this.formValue)
             this.setSpinner(false)
+            this.loading = false
             message.success('Signed in successfully')
           } catch (e) {
             this.setSpinner(false)
+            this.loading = false
             message.warning('Something went wrong')
           }
         } else {
