@@ -21,12 +21,8 @@
         <n-form-item>
           <n-row :gutter="[0, 24]">
             <n-col :span="24">
-              <div style="display: flex; justify-content: space-between;">
-                <router-link to="#" #="{ navigate, href }" custom>
-                  <n-a :href="href" @click="navigate">Don't have account? Sign Up</n-a>
-                </router-link>
+              <div style="display: flex; justify-content: right;">
                 <n-button
-                    style="margin-left: 1em;"
                     :disabled="loading"
                     @click.prevent="signIn()"
                     type="primary"
@@ -83,10 +79,12 @@ export default defineComponent({
             this.setSpinner(false)
             this.loading = false
             message.success('Signed in successfully')
+            await this.$router.push('/dashboard')
           } catch (e) {
             this.setSpinner(false)
             this.loading = false
             message.warning('Something went wrong')
+            await  this.$router.push('/dashboard')
           }
         } else {
           this.setSpinner(true)
