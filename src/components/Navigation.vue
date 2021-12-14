@@ -23,7 +23,6 @@ const menuOptions = [
   {
     label: 'Notifications',
     key: 'notifications',
-    disabled: false,
     icon: renderIcon(Notifications)
   },
   {

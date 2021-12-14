@@ -1,6 +1,6 @@
 import axios, {AxiosRequestConfig} from 'axios';
 
-const apiUrl = process.env.VUE_APP_API_URL || "https://inventory-pft.herokuapp.com/api/";
+const apiUrl = process.env.VUE_APP_API_URL;
 axios.defaults.baseURL = apiUrl;
 
 axios.interceptors.request.use((request: AxiosRequestConfig): AxiosRequestConfig => {

@@ -67,7 +67,8 @@ export default defineComponent({
         }
       },
       ...mapMutations({
-        setSpinner: "spinner/SET_SPINNER_STATUS"
+        setSpinner: "spinner/SET_SPINNER_STATUS",
+        setIsAuthorised: "auth/SET_IS_AUTHORISED"
       }),
       signIn() {
       this.formRef.validate(async (errors) => {
@@ -75,16 +76,16 @@ export default defineComponent({
           this.setSpinner(true)
           this.loading = true
           try {
-            await this.axios.post("auth/", this.formValue)
+            const {data}  = await this.axios.post("auth/", this.formValue)
             this.setSpinner(false)
             this.loading = false
+            this.setIsAuthorised(data)
             message.success('Signed in successfully')
             await this.$router.push('/dashboard')
           } catch (e) {
             this.setSpinner(false)
             this.loading = false
-            message.warning('Something went wrong')
-            await  this.$router.push('/dashboard')
+            message.warning(e.response?.data?.detail || "Something went wrong")
           }
         } else {
           this.setSpinner(true)
@@ -104,7 +105,7 @@ export default defineComponent({
   background-color: #ceeee1;
 }
 
-.n-card::v-deep .n-card-header .n-card-header__main {
+.n-card::v-deep(.n-card-header .n-card-header__main) {
   font-size: 1.4em !important;
   font-weight: bolder !important;
   text-align: center !important;
