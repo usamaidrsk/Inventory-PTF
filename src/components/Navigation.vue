@@ -10,14 +10,10 @@
 </template>
 
 <script>
-import { h, defineComponent } from 'vue'
-import { NIcon } from 'naive-ui'
+import { defineComponent } from 'vue'
 import { Notifications } from '@vicons/ionicons5'
 import { Email, UserAvatar, Locked, Password } from '@vicons/carbon'
-
-function renderIcon (icon) {
-  return () => h(NIcon, null, { default: () => h(icon) })
-}
+import { renderIcon } from  '@/shared/utilz/Index'
 
 const menuOptions = [
   {

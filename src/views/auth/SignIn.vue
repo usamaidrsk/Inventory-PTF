@@ -7,6 +7,7 @@
           :rules="rules"
           :size="size"
           ref="formRef"
+          @submit.prevent="signIn()"
       >
         <n-form-item label="Username" path="username">
           <n-input v-model:value="formValue.username" placeholder="Enter username"/>
@@ -42,6 +43,8 @@
 import {defineComponent, ref} from 'vue'
 import { useMessage } from 'naive-ui'
 import { mapMutations } from 'vuex'
+import {END_POINTS} from '@/shared/constants/endpoints'
+
 export default defineComponent({
   setup () {
     const formRef = ref(null)
@@ -68,7 +71,7 @@ export default defineComponent({
       },
       ...mapMutations({
         setSpinner: "spinner/SET_SPINNER_STATUS",
-        setIsAuthorised: "auth/SET_IS_AUTHORISED"
+        setAuth: "auth/SET_AUTH"
       }),
       signIn() {
       this.formRef.validate(async (errors) => {
@@ -76,12 +79,14 @@ export default defineComponent({
           this.setSpinner(true)
           this.loading = true
           try {
-            const {data}  = await this.axios.post("auth/", this.formValue)
+            const {data} = await this.axios.post(END_POINTS.SIGN_IN, this.formValue)
             this.setSpinner(false)
             this.loading = false
-            this.setIsAuthorised(data)
+            this.setAuth({login: true, tokens: data})
+            const from = this.$router.currentRoute?._rawValue?.query?.from
+            if (from) await this.$router.push(from === '/' ? '/dashboard' : from)
+            else await this.$router.push('/dashboard')
             message.success('Signed in successfully')
-            await this.$router.push('/dashboard')
           } catch (e) {
             this.setSpinner(false)
             this.loading = false
@@ -104,8 +109,7 @@ export default defineComponent({
   max-width: 400px;
   background-color: #ceeee1;
 }
-
-.n-card::v-deep(.n-card-header .n-card-header__main) {
+.n-card:deep(.n-card-header .n-card-header__main){
   font-size: 1.4em !important;
   font-weight: bolder !important;
   text-align: center !important;

@@ -12,6 +12,7 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import { enUS, dateEnUS } from 'naive-ui'
+import {mapGetters, mapMutations} from "vuex";
 
 @Options({
   components: {},
@@ -21,6 +22,23 @@ import { enUS, dateEnUS } from 'naive-ui'
       dateEnUS: dateEnUS,
     }
   },
+  async created() {
+    if (!this.isAuthenticated) {
+      localStorage.removeItem("refresh_token");
+      this.setAuth(false);
+      await this.$router.push('/')
+    }
+  },
+  computed: {
+    ...mapGetters({
+      isAuthenticated: "auth/GET_IS_AUTHENTICATED"
+    })
+  },
+  methods: {
+    ...mapMutations({
+      setAuth: "auth/SET_AUTH"
+    }),
+  }
 })
 
 export default class App extends Vue {}

@@ -1,16 +1,19 @@
 <template>
-  <div>
-
-  </div>
+<div>
+  products
+</div>
 </template>
 
 <script>
 import {defineComponent} from "vue";
-
 export default defineComponent({
-  name: "forgot password"
+  setup () {
+    return {
+    }
+  }
 })
 </script>
+
 <style scoped>
 
 </style>
