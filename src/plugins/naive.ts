@@ -23,14 +23,15 @@ import {
     NDropdown,
     NAvatar,
     NText,
-    NGridItem, NGrid, NDivider, NDataTable,
+    NGridItem, NGrid, NDivider, NDataTable, NModal, NSelect,
 } from 'naive-ui'
 
 const naive = create({
     components: [
         NConfigProvider,NButton, NCard, NRow, NCol, NForm, NFormItem, NInput, NMessageProvider,
         NA, NSpace, NSpin, NLayout, NLayoutContent, NLayoutFooter, NLayoutSider, NLayoutHeader,
-        NIcon, NMenu, NSwitch, NDropdown, NAvatar, NText, NGrid, NGridItem, NDivider, NDataTable
+        NIcon, NMenu, NSwitch, NDropdown, NAvatar, NText, NGrid, NGridItem, NDivider, NDataTable,
+        NModal, NSelect
     ]
 })
 

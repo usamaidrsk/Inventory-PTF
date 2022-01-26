@@ -22,11 +22,12 @@
         <n-form-item>
           <n-row :gutter="[0, 24]">
             <n-col :span="24">
-              <div style="display: flex; justify-content: right;">
+              <div class="flex justify-end">
                 <n-button
                     :disabled="loading"
                     @click.prevent="signIn()"
                     type="primary"
+                    color="#0aa699"
                 >
                   Sign In
                 </n-button>

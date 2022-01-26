@@ -1,7 +1,7 @@
 <template>
-<div>
-  Dashboard Home Page
-</div>
+  <div>
+    Dashboard Home Page
+  </div>
 </template>
 
 <script>

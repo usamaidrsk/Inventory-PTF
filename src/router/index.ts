@@ -2,21 +2,21 @@ import { createWebHistory, createRouter } from "vue-router";
 
 const routes = [
     {
-      path: "/",
-        redirect: { name: 'dashboard' }
-    },
-    {
         path: "/signin",
         name: "signin",
         component: () =>  import("@/views/auth/SignIn.vue"),
     },
     {
-        path: "/dashboard",
+        path: "/",
         name: "dashboard",
         component: () =>  import("@/views/dashboard/Index.vue"),
         children: [
             {
-                path: "/dashboard/",
+                path: "/",
+                redirect: { name: 'home_dashboard' }
+            },
+            {
+                path: "/app/dashboard",
                 name: "home_dashboard",
                 component: () =>  import("@/views/dashboard/home.vue"),
             },
@@ -56,7 +56,7 @@ router.beforeEach((to, from, next) => {
         console.log(vm)
         if (!vm.$store.state?.auth?.isAuthenticated) {
             await vm.$router.push({
-                path: '/',
+                path: '/signin',
                 query: {
                     from: vm.$router.options?.history?.location || '/',
                 }

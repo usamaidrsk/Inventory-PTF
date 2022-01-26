@@ -26,7 +26,7 @@ import {mapGetters, mapMutations} from "vuex";
     if (!this.isAuthenticated) {
       localStorage.removeItem("refresh_token");
       this.setAuth(false);
-      await this.$router.push('/')
+      await this.$router.push('/signin')
     }
   },
   computed: {
