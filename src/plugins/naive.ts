@@ -1,6 +1,5 @@
 import {
-    create, // create naive ui
-// components
+    create,
     NCard,
     NButton,
     NCol,
@@ -14,14 +13,25 @@ import {
     NSpin,
     NLayout,
     NLayoutContent,
-    NLayoutFooter, NLayoutSider, NLayoutHeader, NIcon, NMenu, NSwitch, NConfigProvider, NDropdown, NAvatar, NText
+    NLayoutFooter,
+    NLayoutSider,
+    NLayoutHeader,
+    NIcon,
+    NMenu,
+    NSwitch,
+    NConfigProvider,
+    NDropdown,
+    NAvatar,
+    NText,
+    NGridItem, NGrid, NDivider, NDataTable, NModal, NSelect,
 } from 'naive-ui'
 
 const naive = create({
     components: [
         NConfigProvider,NButton, NCard, NRow, NCol, NForm, NFormItem, NInput, NMessageProvider,
         NA, NSpace, NSpin, NLayout, NLayoutContent, NLayoutFooter, NLayoutSider, NLayoutHeader,
-        NIcon, NMenu, NSwitch, NDropdown, NAvatar, NText
+        NIcon, NMenu, NSwitch, NDropdown, NAvatar, NText, NGrid, NGridItem, NDivider, NDataTable,
+        NModal, NSelect
     ]
 })
 

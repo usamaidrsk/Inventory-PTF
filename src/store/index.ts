@@ -14,3 +14,5 @@ const store = createStore({
 })
 
 export default store;
+export * as auth from './auth'
+export * as spinner from './spinner'

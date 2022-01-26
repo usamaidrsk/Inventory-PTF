@@ -10,4 +10,5 @@ axios.interceptors.request.use((request: AxiosRequestConfig): AxiosRequestConfig
     }
 );
 
+// TODO token expiry check
 export default axios;
