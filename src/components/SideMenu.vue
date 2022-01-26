@@ -29,7 +29,7 @@ import {renderIcon, renderRouterLink} from  '@/shared/utilz/Index'
 
 const menuOptions = [
   {
-    label: renderRouterLink('dashboard', 'Dashboard'),
+    label: renderRouterLink('home_dashboard', 'Dashboard'),
     key: 'dashboard',
     icon: renderIcon(Home)
   },

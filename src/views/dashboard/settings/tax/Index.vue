@@ -33,7 +33,7 @@
           size="huge"
           role="dialog"
           aria-modal="true"
-          title="Add New Tax"
+          :title="`${isEditing ? 'Edit Tax' : 'Add New Tax'}`"
       >
         <n-form
             :label-width="80"
@@ -43,21 +43,29 @@
             ref="formRef"
         >
           <n-form-item label="Description" path="description">
-            <n-input v-model:value="formValue.description" placeholder="Enter description"/>
+            <n-input
+                v-model:value="formValue.description"
+                placeholder="Enter Tax description"
+                clearable
+            />
           </n-form-item>
           <n-form-item path="value" label="Tax Value">
-            <n-input
+            <n-input-number
                 v-model:value="formValue.value"
-                type="number"
-                placeholder="Enter value"
-            />
+                placeholder="Enter Tax Value"
+                style="width: 100%"
+                clearable
+            >
+              <template #suffix>%</template>
+            </n-input-number>
           </n-form-item>
           <n-form-item path="type" label="Tax Type">
             <n-select
                 v-model:value="formValue.type"
                 filterable
-                placeholder="Select TAX TYPE"
+                placeholder="Select Tax Type"
                 :options="selectOptions"
+                clearable
             />
           </n-form-item>
           <n-form-item>
@@ -90,24 +98,24 @@
 import search from "@/components/search";
 import {AddSharp} from '@vicons/ionicons5'
 import { NTag, NButton, useMessage } from 'naive-ui'
-import {h, defineComponent, ref, reactive} from 'vue'
+import {h, defineComponent, ref, reactive } from 'vue'
 import { mapMutations } from 'vuex'
-// import {END_POINTS} from '@/shared/constants/endpoints'
+import {END_POINTS} from '@/shared/constants/endpoints'
 
 export default defineComponent({
   components: {search, AddSharp},
   setup () {
-    // const {data} = context.axios.get(END_POINTS.SETTINGS.TAX.GET)
-    // console.log(context)
+    const message = useMessage()
     const formRef = ref(null)
     const initialFormState = {
       description: '',
-      value: '',
+      value: 0,
       type: ''
     }
     const formValue = ref(initialFormState)
+    const editItem = ref(null)
+    const isEditing = ref(false)
     const showModal = ref(false)
-    const message = useMessage()
     const selectOptions = [
       {
         label: "EXCLUSIVE",
@@ -227,17 +235,24 @@ export default defineComponent({
         type: 'INCLUSIVE'
       },
     ])
-    const openEditorModal = (vla) => {
-      console.log(vla)
-      message.warning("This opens the editor modal")
+    const openEditorModal = (item) => {
+      editItem.value = item
+      formValue.value = {
+        description: item.description,
+        value: Number(item.value),
+        type: item.type
+      }
+      showModal.value = true
+      isEditing.value = true
     }
-    const openDeleteModal = (vla) => {
-      console.log(vla)
-      message.warning("This opens the delete modal")
+    const openDeleteModal = (item) => {
+      message.warning(item.description + "will be deleted")
     }
     const closeEditor = () => {
-      Object.assign(formValue.value, initialFormState)
+      formValue.value = initialFormState
       showModal.value = false
+      isEditing.value = false
+      editItem.value = null
     }
     return {
       formRef,
@@ -247,6 +262,7 @@ export default defineComponent({
       columns: createColumns({openEditorModal,openDeleteModal}),
       pagination: paginationReactive,
       showModal,
+      isEditing,
       size: ref('medium'),
       formValue,
       rules: {
@@ -258,7 +274,7 @@ export default defineComponent({
         value: {
           required: true,
           message: 'Tax value is required',
-          trigger: ['blur', 'input']
+          trigger: ['input']
         },
         type: {
           required: true,
@@ -269,21 +285,56 @@ export default defineComponent({
       ...mapMutations({
         setSpinner: "spinner/SET_SPINNER_STATUS",
       }),
-      closeEditor() {
-        Object.assign(formValue, initialFormState)
-        showModal.value = false
-      },
-      saveTax() {
-        taxItems.value.unshift({
-          key: taxItems.value.length + 1,
-          id: "TAX0001" + formValue.value.value,
-          description: formValue.value.description,
-          value: formValue.value.value,
-          type: formValue.value.type
+      closeEditor,
+      ...mapMutations({
+        setSpinner: "spinner/SET_SPINNER_STATUS",
+      }),
+      async saveTax() {
+        this.formRef.validate(async (errors) => {
+          if (!errors) {
+            this.setSpinner(true)
+            const {description, value, type} = formValue.value
+            if (isEditing.value) {
+              taxItems.value.map((item) => {
+                if (editItem.value.id === item.id) {
+                  const {key, id} = editItem.value
+                  return {
+                    key, id,
+                    description: description.toUpperCase(),
+                    value, type
+                  }
+                } else return {...item}
+              })
+              this.setSpinner(false)
+            } else {
+              taxItems.value.unshift({
+                key: taxItems.value.length + 1,
+                id: "TAX0001" + value,
+                description: description.toUpperCase(),
+                value, type
+              })
+              try {
+                await this.axios.post(
+                    END_POINTS.SETTINGS.TAX.CREATE,
+                    {
+                      type,
+                      description: description.toUpperCase(),
+                      value: Number(value)
+                    })
+                this.setSpinner(false)
+                message.success(`Tax was ${isEditing.value ? 'edited' : 'created'} successfully`)
+                closeEditor()
+              } catch (e) {
+                this.setSpinner(false)
+                this.loading = false
+                message.warning(e.response?.data?.detail || "Something went wrong")
+              }
+            }
+          } else {
+            message.warning("Please enter required fields")
+          }
         })
-        message.success('Tax was created successfully')
-        closeEditor()
-      },
+      }
     }
   }
 })

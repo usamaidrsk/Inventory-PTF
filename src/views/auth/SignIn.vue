@@ -85,8 +85,8 @@ export default defineComponent({
             this.loading = false
             this.setAuth({login: true, tokens: data})
             const from = this.$router.currentRoute?._rawValue?.query?.from
-            if (from) await this.$router.push(from === '/' ? '/dashboard' : from)
-            else await this.$router.push('/dashboard')
+            if (from) await this.$router.push(from === '/signin' ? '/' : from)
+            else await this.$router.push('/')
             message.success('Signed in successfully')
           } catch (e) {
             this.setSpinner(false)

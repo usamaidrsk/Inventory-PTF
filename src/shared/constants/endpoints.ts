@@ -5,7 +5,8 @@ export const END_POINTS = {
     },
     SETTINGS: {
         TAX: {
-            GET: ''
+            GET: '',
+            CREATE: 'create_tax'
         }
     }
 }

@@ -54,8 +54,9 @@ export default class App extends Vue {}
 .spinnerStyles {
   position: fixed;
   width: 98%;
-  padding-top: 1em;
+  padding-top: 2em;
   display: flex;
-  justify-content: right;
+  justify-content: center;
+  z-index: 5;
 }
 </style>

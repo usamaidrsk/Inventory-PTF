@@ -12,3 +12,14 @@ axios.interceptors.request.use((request: AxiosRequestConfig): AxiosRequestConfig
 
 // TODO token expiry check
 export default axios;
+
+// import axios, { AxiosInstance } from 'axios'
+//
+// const apiClient: AxiosInstance = axios.create({
+//     baseURL: apiUrl,
+//     headers: {
+//         'Content-type': 'application/json',
+//     },
+// })
+//
+// export default apiClient
