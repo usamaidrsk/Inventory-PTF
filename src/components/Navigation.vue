@@ -1,7 +1,7 @@
 <template>
   <n-layout >
     <n-layout-header position="fixed" bordered style="display: flex; align-items: center; flex-direction: row; justify-content: space-between;">
-      <h2 class="ml-4 text-secondary font-bold">PICK && PAY</h2>
+      <h2 class="ml-4 text-secondary font-bold text-current font-mono text-lg">PICK && PAY</h2>
       <div>
         <n-menu mode="horizontal" style="margin-right: 3em" :inverted="inverted" :options="menuOptions" />
       </div>

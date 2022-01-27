@@ -34,6 +34,18 @@ import {mapGetters, mapMutations} from "vuex";
       isAuthenticated: "auth/GET_IS_AUTHENTICATED"
     })
   },
+  watch: {
+    async isAuthenticated(val) {
+      if (!val) {
+        await this.$router.push({
+          path: '/signin',
+          query: {
+            from: this.$router.options?.history?.location || '/',
+          }
+        })
+      }
+    }
+  },
   methods: {
     ...mapMutations({
       setAuth: "auth/SET_AUTH"

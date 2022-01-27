@@ -6,7 +6,7 @@
         :collapsed-width="72"
         :width="250"
         :native-scrollbar="false"
-        style="max-height: 87vh; overflow: hidden; overflow-y: auto"
+        style="max-height: 87vh; overflow: hidden; overflow-y: auto;"
     >
       <n-menu
           style=""

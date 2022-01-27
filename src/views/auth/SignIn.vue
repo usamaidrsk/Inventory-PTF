@@ -10,7 +10,10 @@
           @submit.prevent="signIn()"
       >
         <n-form-item label="Username" path="username">
-          <n-input v-model:value="formValue.username" placeholder="Enter username"/>
+          <n-input
+              v-model:value="formValue.username"
+              placeholder="Enter username"
+          />
         </n-form-item>
         <n-form-item path="password" label="Password">
           <n-input
@@ -44,7 +47,7 @@
 import {defineComponent, ref} from 'vue'
 import { useMessage } from 'naive-ui'
 import { mapMutations } from 'vuex'
-import {END_POINTS} from '@/shared/constants/endpoints'
+import {apiEndPoints} from "@/shared/constants/endPoints/Index";
 
 export default defineComponent({
   setup () {
@@ -80,7 +83,7 @@ export default defineComponent({
           this.setSpinner(true)
           this.loading = true
           try {
-            const {data} = await this.axios.post(END_POINTS.SIGN_IN, this.formValue)
+            const {data} = await this.axios.post(apiEndPoints().SIGN_IN, this.formValue)
             this.setSpinner(false)
             this.loading = false
             this.setAuth({login: true, tokens: data})
