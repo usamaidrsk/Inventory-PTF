@@ -1,9 +1,14 @@
 <template>
   <n-layout >
-    <n-layout-header position="fixed" bordered style="display: flex; align-items: center; flex-direction: row; justify-content: space-between;">
-      <h2 class="ml-4 text-secondary font-bold text-current font-mono text-lg">PICK && PAY</h2>
+    <n-layout-header
+        position="fixed"
+        bordered
+        class="flex flex-row justify-between align-middle py-3"
+        style="background-color: #0aa699"
+    >
+      <h2 class="ml-4 mt-2 text-secondary font-bold text-current font-mono text-lg">PICK && PAY</h2>
       <div>
-        <n-menu mode="horizontal" style="margin-right: 3em" :inverted="inverted" :options="menuOptions" />
+        <n-menu mode="horizontal" class="mr-4" :inverted="inverted" :options="menuOptions" />
       </div>
     </n-layout-header>
   </n-layout>

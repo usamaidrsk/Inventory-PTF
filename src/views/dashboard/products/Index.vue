@@ -1,14 +1,20 @@
 <template>
   <n-grid :x-gap="12" :y-gap="4" :cols="4">
-    <n-grid-item :span="2">
+    <n-grid-item :span="1">
       <div class="header-section pt-4 text-secondary font-bold text-current font-mono text-lg">
         Products
       </div>
     </n-grid-item>
-    <n-grid-item :span="2">
+    <n-grid-item :span="3">
       <div class="header-section flex flex-1 flex-row justify-end">
-        <search :search-data="data" :custom-class="''" which-data="Product" @results="handleSearch"/>
-        <n-button color="#0aa699" class="ml-4">
+        <search :search-data="data" :reset-search="resetSearch" which-data="Product" @results="handleSearch"/>
+        <n-button color="#0aa699" class="ml-4" @click="handleBrandCategoryClick('Category')">
+          Categories
+        </n-button>
+        <n-button color="#0aa699" class="ml-4" @click="handleBrandCategoryClick('Brand')">
+          Brands
+        </n-button>
+        <n-button color="#0aa699" class="ml-4" @click="newProduct()">
           <template #icon>
             <n-icon>
               <add-sharp />
@@ -18,153 +24,72 @@
         </n-button>
       </div>
     </n-grid-item>
-    <n-grid-item :span="4" class="">
+    <n-grid-item :span="4">
       <n-divider />
       <div class="content-section">
         <n-data-table
             :columns="columns"
             :data="searchResults.length ? searchResults : data"
             :pagination="pagination"
+            style="min-height: 67vh !important;"
         />
       </div>
     </n-grid-item>
   </n-grid>
-  <div>
-    <n-modal :show="showEditorModal">
-      <n-card
-          style="width: 40%; height: 80%"
-          :bordered="false"
-          size="huge"
-          role="dialog"
-          aria-modal="true"
-          :title="`${isEditing ? 'Edit Tax' : 'Add New Tax'}`"
-      >
-        <n-form
-            :label-width="80"
-            :model="formValue"
-            :rules="rules"
-            size="medium"
-            ref="formRef"
-        >
-          <n-form-item label="Tax Name" path="description">
-            <n-input
-                v-model:value="formValue.description"
-                placeholder="Enter Tax name"
-                clearable
-            />
-          </n-form-item>
-          <n-form-item path="value" label="Tax Value">
-            <n-input-number
-                v-model:value="formValue.taxValue"
-                :min="1"
-                :max="100"
-                placeholder="Enter Tax Value"
-                clearable
-                class="w-full"
-            >
-              <template #suffix>%</template>
-            </n-input-number>
-          </n-form-item>
-          <n-form-item path="type" label="Tax Type">
-            <n-select
-                v-model:value="formValue.type"
-                filterable
-                placeholder="Select Tax Type"
-                :options="selectOptions"
-                clearable
-            />
-          </n-form-item>
-          <n-form-item>
-            <n-row :gutter="[0, 24]">
-              <n-col :span="24">
-                <div class="flex flex-row justify-end">
-                  <n-button @click.prevent="closeEditor()">
-                    Cancel
-                  </n-button>
-                  <n-button
-                      :disabled="loading"
-                      @click.prevent="saveTax()"
-                      type="primary"
-                      color="#0aa699"
-                      class="ml-3"
-                  >
-                    Save
-                  </n-button>
-                </div>
-              </n-col>
-            </n-row>
-          </n-form-item>
-        </n-form>
-      </n-card>
-    </n-modal>
-    <n-modal :show="showDeleteModal">
-      <n-card
-          style="width: 40%; height: 40%"
-          :bordered="false"
-          size="huge"
-          role="dialog"
-          aria-modal="true"
-          title="Delete Tax"
-      >
-        <div class="text-md font-semibold text-current font-serif mb-2">
-          Are you sure on deleting this Tax ?
-        </div>
-        <div class="text-sm font-light font-italic mb-6">
-          All products that have been implementing this Tax,
-          will not be taxed after this action
-        </div>
-        <n-row :gutter="[0, 24]">
-          <n-col :span="24">
-            <div class="flex flex-row justify-end">
-              <n-button @click.prevent="closeEditor()">
-                Cancel
-              </n-button>
-              <n-button
-                  :disabled="loading"
-                  @click.prevent="deleteTax()"
-                  type="primary"
-                  color="red"
-                  class="ml-3"
-              >
-                Delete
-              </n-button>
-            </div>
-          </n-col>
-        </n-row>
-      </n-card>
-    </n-modal>
-  </div>
+  <details-modal
+      v-if="showEditorModal"
+      :show-editor-modal="showEditorModal"
+      :is-view-mode="isViewMode"
+      :product="selectedProduct"
+      @closeModal="handleDetailsModalClose"
+      @saveProduct="handleProduct"
+      @openDeleteModal="handleOpenDeleteModal"
+  />
+  <delete-modal
+      :show-delete-modal="showDeleteModal"
+      @closeModal="handleDetailsModalClose"
+      @delete="handleProductDelete"
+  />
+  <brand-category-modal
+      v-if="brandOrCategory"
+      :show-modal="showBrandCategoryModal"
+      :data-type="brandOrCategory"
+      @closeModal="handleDetailsModalClose"
+  />
 </template>
 
 <script>
-import search from "@/components/search";
+import Search from "@/components/Search";
 import {AddSharp} from '@vicons/ionicons5'
 import { NButton, useMessage } from 'naive-ui'
 import {h, defineComponent, ref, reactive, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { mapMutations } from 'vuex'
-// import axios from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import {renderTableTitles} from "@/shared/utilz/Index";
 import {apiEndPoints} from "@/shared/constants/endPoints/Index";
-
+import DetailsModal from './DetailsModal'
+import DeleteModal from "./DeleteModal";
+import BrandCategoryModal from "./BrandCategoryModal"
 export default defineComponent({
-  components: {search, AddSharp},
+  components: {BrandCategoryModal, DeleteModal, Search, AddSharp, DetailsModal},
   setup () {
-    const message = useMessage()
     const store = useStore()
-    const formRef = ref(null)
-    const initialFormState = {
-      description: null,
-      taxValue: null,
-      type: null
-    }
-    const formValue = ref(initialFormState)
-    const selectedTax = ref(null)
-    const isEditing = ref(false)
+    const message = useMessage()
+    const selectedProduct = ref(null)
+    const loading = ref(false)
+    const isViewMode = ref(false)
     const showEditorModal = ref(false)
     const showDeleteModal = ref(false)
-    const createColumns = ({ openEditorModal }) => {
+    const showBrandCategoryModal = ref(false)
+    const brandOrCategory = ref(null)
+    const createColumns = ({ expandViewModal }) => {
       return [
+        {
+          title: renderTableTitles('SKU'),
+          key: 'sku_id',
+          fixed: 'left',
+        },
         {
           title: renderTableTitles('NAME'),
           key: 'name',
@@ -195,24 +120,24 @@ export default defineComponent({
           key: 'actions',
           fixed: 'left',
           render (row) {
-            return h('div', {}, {
-              default: h(NButton, {
+            return h('div', {}, [
+              h(NButton, {
                     size: 'small',
-                    onClick: () => openEditorModal(row)
+                    color: "#0aa699",
+                    onClick: () => expandViewModal(row)
                   },
-                  { default: () => 'Expand' }
+                  { default: () => 'View' }
               )
-            })
+            ])
           }
         }
       ]
     }
-
     const paginationReactive = reactive({
       page: 1,
       pageSize: 10,
       showSizePicker: true,
-      pageSizes: [5, 10, 15],
+      pageSizes: [10, 15, 20],
       onChange: (page) => {
         paginationReactive.page = page
       },
@@ -221,158 +146,102 @@ export default defineComponent({
         paginationReactive.page = 1
       }
     })
-    const taxItems = ref( [])
+    const products = ref( [])
     const searchResults = ref( [])
+    const resetSearch = ref(null)
 
     onMounted(async () => {
-      store.commit('spinner/SET_SPINNER_STATUS', false)
-      // try{
-      //   const { data} = await axios.get(apiEndPoints().SETTINGS.TAX.GET)
-      //   taxItems.value = data.map((item, index) => ({
-      //     type: item.type.toUpperCase(),
-      //     description: item.description.toUpperCase(),
-      //     value: item.value,
-      //     id: item.id,
-      //     key: index
-      //   }))
-      // } catch (e) {
-      //   message.warning(e.response?.data?.detail || "Something went wrong")
-      // }
-    })
-    const openEditorModal = (item) => {
-      selectedTax.value = item
-      formValue.value = {
-        description: item.description,
-        taxValue: item.value,
-        type: item.type
+      try{
+        store.commit('spinner/SET_SPINNER_STATUS', true)
+        const { data} = await axios.get(apiEndPoints().PRODUCTS.GET)
+        products.value = data.map((item, index) => ({
+          description: item.description.toUpperCase(),
+          name: item.name.toUpperCase(),
+          ...item,
+          key: index
+        }))
+        store.commit('spinner/SET_SPINNER_STATUS', false)
+      } catch (e) {
+        store.commit('spinner/SET_SPINNER_STATUS', false)
+        message.warning(e.response?.data?.detail || "Something went wrong")
       }
-      showEditorModal.value = false
-      isEditing.value = true
+    })
+    const handleBrandCategoryClick = (val) => {
+      showBrandCategoryModal.value = true
+      brandOrCategory.value = val
     }
-    // const openDeleteModal = (item) => {
-    //   selectedTax.value = item
-    //   showDeleteModal.value = false
-    // }
+    const expandViewModal = (item) => {
+      showEditorModal.value = true
+      isViewMode.value = true
+      selectedProduct.value = item
+    }
+
     return {
-      formRef,
-      loading: false,
-      selectOptions: [
-        {
-          label: "EXCLUSIVE",
-          value: 'EXCLUSIVE',
-        },
-        {
-          label: 'INCLUSIVE',
-          value: 'INCLUSIVE'
-        }],
-      data: taxItems,
+      loading,
+      data: products,
       searchResults,
-      columns: createColumns({openEditorModal}),
+      resetSearch,
+      columns: createColumns({expandViewModal}),
       pagination: paginationReactive,
       showEditorModal,
+      selectedProduct,
+      isViewMode,
       showDeleteModal,
-      isEditing,
-      formValue,
-      size: ref('medium'),
-      rules: {
-        description: {
-          required: true,
-          message: 'Tax name is required',
-          trigger: ['blur', 'input']
-        },
-        taxValue: {
-          required: true,
-          message: 'Tax value is required',
-          trigger: ['blur', 'input']
-        },
-        type: {
-          required: true,
-          message: 'Tax type is required',
-          trigger: ['blur', 'input']
-        }
-      },
+      showBrandCategoryModal,
+      brandOrCategory,
+      handleBrandCategoryClick,
       ...mapMutations({
         setSpinner: "spinner/SET_SPINNER_STATUS",
       }),
-      closeEditor() {
-        showEditorModal.value = false
-        showDeleteModal.value = false
-        isEditing.value = false
-        selectedTax.value = null
-        Object.assign(formValue.value, initialFormState)
+      newProduct() {
+        showEditorModal.value = true;
+        isViewMode.value = false
       },
-      ...mapMutations({
-        setSpinner: "spinner/SET_SPINNER_STATUS",
-      }),
       handleSearch(event) {
+        resetSearch.value = null
         searchResults.value = event
       },
-      deleteTax() {
-        this.setSpinner(true)
-        this.loading = true
+      handleOpenDeleteModal() {
+        showEditorModal.value = false
+        showDeleteModal.value = true
+      },
+      async handleProductDelete() {
+        store.commit('spinner/SET_SPINNER_STATUS', true)
+        loading.value = true
         try {
-          // TODO call axios delete tax
-          taxItems.value = taxItems.value.filter(item => item.id !== selectedTax.value.id)
-          this.setSpinner(false)
-          this.loading = false
-          message.success('Tax was deleted successfully')
-          this.closeEditor()
+          await axios.delete(apiEndPoints().PRODUCTS.DELETE(selectedProduct.value.id))
+          products.value = products.value.filter(item => item.sku_id !== selectedProduct.value.sku_id)
+          showDeleteModal.value = false
+          selectedProduct.value = null
+          store.commit('spinner/SET_SPINNER_STATUS', false)
+          message.success('Product was deleted successfully')
+          searchResults.value = []
+          resetSearch.value = ''
         } catch (e) {
-          this.setSpinner(false)
-          this.loading = false
+          store.commit('spinner/SET_SPINNER_STATUS', false)
+          loading.value = false
           message.warning(e.response?.data?.detail || "Something went wrong")
         }
       },
-      saveTax() {
-        this.formRef.validate(async (errors) => {
-          if (!errors) {
-            this.setSpinner(true)
-            this.loading = false
-            const {description, taxValue: value, type} = formValue.value
-            try {
-              // TODO check if editing and use appropriate axios method
-              if(isEditing.value) {
-                await this.axios.post(
-                    apiEndPoints().SETTINGS.TAX.CREATE,
-                    {
-                      type,
-                      description: description.toUpperCase(),
-                      value: Number(value)
-                    })
-              }
-              if (isEditing.value) {
-                taxItems.value = taxItems.value.map((item) => {
-                  if (selectedTax.value.id === item.id) {
-                    const {key, id} = selectedTax.value
-                    return {
-                      key, id,
-                      description: description.toUpperCase(),
-                      value, type
-                    }
-                  } else return {...item}
-                })
-              } else {
-                taxItems.value = [{
-                  key: taxItems.value.length + 1,
-                  id: "TAX-" + value,
-                  description: description.toUpperCase(),
-                  value, type
-                }, ...taxItems.value]
-              }
-              this.setSpinner(false)
-              this.loading = false
-              message.success(`Tax was ${isEditing.value ? 'edited' : 'created'} successfully`)
-              this.closeEditor()
-            } catch (e) {
-              this.setSpinner(false)
-              this.loading = false
-              message.warning(e.response?.data?.detail || "Something went wrong")
-            }
-          } else {
-            message.warning("Please enter required fields")
-          }
-        })
-      }
+      handleProduct(event) {
+        if (isViewMode.value) {
+          products.value = products.value.map(item => {
+            if(item.key === event.key) return event
+            else return item
+          })
+        } else {
+          products.value = [{...event, key: products.value.length + 1}, ...products.value]
+        }
+        isViewMode.value = false
+      },
+      handleDetailsModalClose() {
+        showEditorModal.value = false
+        showDeleteModal.value = false
+        showBrandCategoryModal.value = false
+        isViewMode.value = false
+        selectedProduct.value = null
+        brandOrCategory.value = null
+      },
     }
   }
 })

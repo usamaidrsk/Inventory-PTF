@@ -7,7 +7,7 @@
     </n-grid-item>
     <n-grid-item :span="2">
       <div class="header-section flex flex-1 flex-row justify-end">
-        <search :search-data="data" :custom-class="''" which-data="Tax" @results="handleSearch"/>
+        <search :search-data="data" :reset-search="resetSearch" which-data="Tax" @results="handleSearch"/>
         <n-button color="#0aa699" class="ml-4" @click="showEditorModal = true">
           <template #icon>
             <n-icon>
@@ -25,6 +25,7 @@
             :columns="columns"
             :data="searchResults.length ? searchResults : data"
             :pagination="pagination"
+            style="min-height: 72vh !important;"
         />
       </div>
     </n-grid-item>
@@ -53,7 +54,7 @@
                 clearable
             />
           </n-form-item>
-          <n-form-item path="value" label="Tax Value">
+          <n-form-item label="Tax Value" path="taxValue">
             <n-input-number
                 v-model:value="formValue.taxValue"
                 :min="1"
@@ -137,7 +138,7 @@
 </template>
 
 <script>
-import search from "@/components/search";
+import Search from "@/components/Search";
 import {AddSharp} from '@vicons/ionicons5'
 import { NTag, NButton, useMessage } from 'naive-ui'
 import {h, defineComponent, ref, reactive, onMounted } from 'vue'
@@ -148,7 +149,7 @@ import {renderTableTitles} from "@/shared/utilz/Index";
 import {apiEndPoints} from "@/shared/constants/endPoints/Index";
 
 export default defineComponent({
-  components: {search, AddSharp},
+  components: {Search, AddSharp},
   setup () {
     const message = useMessage()
     const store = useStore()
@@ -240,9 +241,10 @@ export default defineComponent({
     })
     const taxItems = ref( [])
     const searchResults = ref( [])
+    const resetSearch = ref( null)
 
     onMounted(async () => {
-      store.commit('spinner/SET_SPINNER_STATUS', false)
+      store.commit('spinner/SET_SPINNER_STATUS', true)
       try{
         const { data} = await axios.get(apiEndPoints().SETTINGS.TAX.GET)
         taxItems.value = data.map((item, index) => ({
@@ -255,6 +257,7 @@ export default defineComponent({
       } catch (e) {
         message.warning(e.response?.data?.detail || "Something went wrong")
       }
+      store.commit('spinner/SET_SPINNER_STATUS', false)
     })
     const openEditorModal = (item) => {
       selectedTax.value = item
@@ -284,6 +287,7 @@ export default defineComponent({
         }],
       data: taxItems,
       searchResults,
+      resetSearch,
       columns: createColumns({openEditorModal,openDeleteModal}),
       pagination: paginationReactive,
       showEditorModal,
@@ -298,9 +302,10 @@ export default defineComponent({
           trigger: ['blur', 'input']
         },
         taxValue: {
+          type: 'number',
           required: true,
+          trigger: ['blur', 'change'],
           message: 'Tax value is required',
-          trigger: ['blur', 'input']
         },
         type: {
           required: true,
@@ -316,13 +321,19 @@ export default defineComponent({
         showDeleteModal.value = false
         isEditing.value = false
         selectedTax.value = null
-        Object.assign(formValue.value, initialFormState)
+        this.clearForm()
       },
       ...mapMutations({
         setSpinner: "spinner/SET_SPINNER_STATUS",
       }),
       handleSearch(event) {
+        resetSearch.value = null
         searchResults.value = event
+      },
+      clearForm() {
+        formValue.value.description = null
+        formValue.value.type = null
+        formValue.value.taxValue = null
       },
       async deleteTax() {
         this.setSpinner(true)
@@ -334,6 +345,8 @@ export default defineComponent({
           this.loading = false
           message.success('Tax was deleted successfully')
           this.closeEditor()
+          searchResults.value = []
+          resetSearch.value = ''
         } catch (e) {
           this.setSpinner(false)
           this.loading = false
@@ -366,6 +379,8 @@ export default defineComponent({
               this.loading = false
               message.success(`Tax was ${isEditing.value ? 'edited' : 'created'} successfully`)
               this.closeEditor()
+              searchResults.value = []
+              resetSearch.value = ''
             } catch (e) {
               this.setSpinner(false)
               this.loading = false

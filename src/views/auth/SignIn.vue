@@ -111,7 +111,7 @@ export default defineComponent({
 <style scoped>
 .n-card {
   max-width: 400px;
-  background-color: #ceeee1;
+  background-color: #0aa699;
 }
 .n-card:deep(.n-card-header .n-card-header__main){
   font-size: 1.4em !important;

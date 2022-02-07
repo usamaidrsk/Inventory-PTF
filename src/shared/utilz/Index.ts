@@ -19,3 +19,4 @@ export function renderRouterLink (to: string, labelName: string, params = null )
         () => labelName
     )
 }
+
