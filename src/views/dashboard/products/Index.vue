@@ -66,7 +66,7 @@ import {h, defineComponent, ref, reactive, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { mapMutations } from 'vuex'
 import axios from '@/plugins/axios'
-import {renderTableTitles} from "@/shared/utilz/Index";
+import {renderTableTitles, currencyValue} from "@/shared/utilz/Index";
 import {apiEndPoints} from "@/shared/constants/endPoints/Index";
 import DetailsModal from './DetailsModal'
 import DeleteModal from "./DeleteModal";
@@ -104,11 +104,28 @@ export default defineComponent({
           title: renderTableTitles('BUYING PRICE'),
           key: 'buying_price',
           fixed: 'left',
+          render (row) {
+            return h(
+                'div', {},
+                {
+                  default: () => currencyValue(row.buying_price)
+                }
+            )
+          }
         },
         {
           title: renderTableTitles('SELLING PRICE'),
           key: 'selling_price',
-          fixed: 'left'
+          fixed: 'left',
+          render (row) {
+            return h(
+                'div',
+                {},
+                {
+                  default: () => currencyValue(row.selling_price)
+                }
+            )
+          }
         },
         {
           title: renderTableTitles('STOCK'),

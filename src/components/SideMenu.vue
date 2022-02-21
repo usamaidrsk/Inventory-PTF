@@ -25,6 +25,7 @@ import {
   BusinessOutline as Inventory,
   HelpBuoy as Help,
 } from '@vicons/ionicons5'
+import { ShoppingCatalog as Sales } from '@vicons/carbon'
 import {renderIcon, renderRouterLink} from  '@/shared/utilz/Index'
 
 const menuOptions = [
@@ -32,6 +33,18 @@ const menuOptions = [
     label: renderRouterLink('home_dashboard', 'Dashboard'),
     key: 'dashboard',
     icon: renderIcon(Home)
+  },
+  {
+    label: 'Sales',
+    key: 'sales',
+    icon: renderIcon(Sales),
+    disabled: false,
+    children: [
+      {
+        label: renderRouterLink('invoices', "Invoices"),
+        key: 'invoices'
+      }
+    ]
   },
   {
     label: 'Inventory',
@@ -70,18 +83,6 @@ const menuOptions = [
       {
         label:  renderRouterLink('tax', 'Tax Settings'),
         key: 'tax-settings'
-      },
-      {
-        label: 'Apps Manager',
-        key: 'apps-manager'
-      },
-      {
-        label: 'System Logo & Color',
-        key: 'system-logo-and-color'
-      },
-      {
-        label: 'API',
-        key: 'api'
       }
     ]
   },

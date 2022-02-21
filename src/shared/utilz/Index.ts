@@ -19,4 +19,10 @@ export function renderRouterLink (to: string, labelName: string, params = null )
         () => labelName
     )
 }
+export function currencyValue(value: number): any {
+    let values = value.toString().replace(/[\D\s._-]+/g, '');
+    const numberValue = values ? parseInt(values, 10) : 0;
+    values = numberValue === 0 ? '' : numberValue.toLocaleString('en-US');
+    return values
+}
 

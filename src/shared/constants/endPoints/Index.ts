@@ -26,6 +26,16 @@ export function apiEndPoints() {
                 UPDATE: 'update_tax',
                 DELETE: (id: number) => 'delete_tax/' + id,
             }
-        }
+        },
+        SALES: {
+            INVOICE: {
+                GET: 'get_invoice',
+                GET_ONE: (id: number) => 'get_invoice/' + id,
+                CREATE: 'create_tax',
+                UPDATE: 'update_tax',
+                DELETE: (id: number) => 'delete_invoice/' + id,
+            }
+        },
+
     }
 }
