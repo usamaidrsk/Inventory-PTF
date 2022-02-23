@@ -122,7 +122,6 @@
                 <n-select
                     placeholder="Select Taxes"
                     v-model:value="formValue.tax"
-                    :default-value="taxValue"
                     :options="taxes"
                     filterable
                     clearable
@@ -139,7 +138,6 @@
                 <n-select
                     v-model:value="formValue.category"
                     placeholder="Select Category"
-                    :default-value="categoryValue"
                     filterable
                     clearable
                     :options="categories"
@@ -155,7 +153,6 @@
                 <n-select
                     v-model:value="formValue.brand"
                     placeholder="Select Brand"
-                    :default-value="brandValue"
                     filterable
                     clearable
                     :options="brands"
@@ -174,7 +171,6 @@ import {apiEndPoints} from "@/shared/constants/endPoints/Index";
 import axios from '@/plugins/axios'
 import {NButton, useMessage} from "naive-ui";
 import {useStore} from "vuex"
-
 export default defineComponent({
   emits: ['saveProduct', 'closeModal', 'openDeleteModal'],
   props: {
@@ -200,12 +196,9 @@ export default defineComponent({
     const store = useStore()
     const formRef = ref(null)
     const loading = ref(false)
-    const taxes = ref(null)
-    const categories = ref(null)
-    const brands = ref(null)
-    const taxValue = ref([])
-    const brandValue = ref(null)
-    const categoryValue = ref(null)
+    const taxes = ref([])
+    const categories = ref([])
+    const brands = ref([])
     const isEditing = ref(false)
     const initialFormState = {
       sku_id: null,
@@ -221,12 +214,17 @@ export default defineComponent({
       tax: null
     }
     const formValue = ref(initialFormState)
+    onMounted( async () => {
+      await fetchTaxes()
+      await fetchCategories()
+      await fetchBrands()
+    })
     watchEffect(() => {
       if(stateProps.isViewMode.value) {
         const {
           name, sku_id, description, selling_price,
           buying_price, stock_threshold, stock_level,
-          discount, tax, brand, category
+          discount, brand, category, tax
         } = stateProps.product.value
         formValue.value.name = name
         formValue.value.sku_id = sku_id
@@ -236,18 +234,10 @@ export default defineComponent({
         formValue.value.stock_level = stock_level
         formValue.value.stock_threshold = stock_threshold
         formValue.value.discount = discount
-        taxValue.value = []
-        if(tax.length) {
-          tax.forEach(x => {
-            taxValue.value.push(x.id)
-          })
-        }
-        brandValue.value = brand?.id || null
-        categoryValue.value = category?.id || null
-
-        console.log(taxValue.value, brandValue.value, categoryValue.value)
-      }
-      else formValue.value = initialFormState
+        formValue.value.brand = brand ? brand.id : null
+        formValue.value.category = category ? category.id : null
+        formValue.value.tax = tax.length > 0 ? tax.map(tax => tax.id) : null
+      } else formValue.value = initialFormState
     })
     const fetchTaxes = async () => {
       try{
@@ -375,16 +365,8 @@ export default defineComponent({
         product: stateProps.product.value
       })
     })
-    onMounted( async () => {
-      await fetchTaxes()
-      await fetchCategories()
-      await fetchBrands()
-    })
     return {
       formRef,
-      categoryValue,
-      brandValue,
-      taxValue,
       formValue,
       taxes,
       brands,
@@ -449,7 +431,5 @@ export default defineComponent({
   }
 })
 </script>
-
 <style scoped>
-
 </style>
