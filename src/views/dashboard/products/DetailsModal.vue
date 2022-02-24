@@ -30,7 +30,6 @@
                     <n-input
                         placeholder="Enter SKU"
                         v-model:value="formValue.sku_id"
-                        :disabled="isViewMode"
                     />
                   </n-form-item>
                 </n-grid-item>
@@ -126,6 +125,7 @@
                     filterable
                     clearable
                     multiple
+                    :max-tag-count="4"
                 />
               </n-form-item>
             </n-grid-item>
@@ -214,11 +214,6 @@ export default defineComponent({
       tax: null
     }
     const formValue = ref(initialFormState)
-    onMounted( async () => {
-      await fetchTaxes()
-      await fetchCategories()
-      await fetchBrands()
-    })
     watchEffect(() => {
       if(stateProps.isViewMode.value) {
         const {
@@ -272,6 +267,11 @@ export default defineComponent({
         message.warning(e.response?.data?.detail || "Something went wrong")
       }
     }
+    onMounted( async () => {
+      await fetchTaxes()
+      await fetchCategories()
+      await fetchBrands()
+    })
     const clearForm = () => {
       formValue.value.sku_id = null
       formValue.value.name = null
@@ -353,7 +353,7 @@ export default defineComponent({
     const renderCardTitle = ({ isViewMode, initialButtons, productViewButtons, product }) => {
       return h('div', {}, [
         h('div', {class: "flex flex-row"}, [
-          h('h1',{class: "flex-none font-semibold"}, `${ isViewMode ? product.name : 'Add New Product'}`),
+          h('h1',{class: "flex-none font-semibold"}, `${ isViewMode ? product.name : 'New Product'}`),
           h('div', {class: "justify-self-end ml-auto"}, [ isViewMode ? productViewButtons.value : initialButtons.value])
         ])
       ])
@@ -392,7 +392,7 @@ export default defineComponent({
           type: 'number',
           required: true,
           trigger: ['blur', 'change'],
-          message: 'Selling Price is required'
+          message: 'Selling price is required'
         },
         buying_price: {
           type: 'number',
@@ -404,7 +404,10 @@ export default defineComponent({
           required: false,
         },
         stock_level: {
+          type: 'number',
           required: false,
+          trigger: ['blur', 'change'],
+          message: 'Stock level is required'
         },
         discount: {
           required: false,

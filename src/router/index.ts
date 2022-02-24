@@ -23,7 +23,7 @@ const routes = [
             {
                 path: "/app/invoices",
                 name: "invoices",
-                component: () =>  import("@/views/dashboard/sales/Index.vue")
+                component: () =>  import("@/views/dashboard/sales/invoices/Index.vue")
             },
             {
                 path: "/app/products",
@@ -58,7 +58,6 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     next(async (vm) => {
-        console.log(vm)
         if (!vm.$store.state?.auth?.isAuthenticated) {
             await vm.$router.push({
                 path: '/signin',

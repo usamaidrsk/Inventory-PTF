@@ -31,8 +31,8 @@ export function apiEndPoints() {
             INVOICE: {
                 GET: 'get_invoice',
                 GET_ONE: (id: number) => 'get_invoice/' + id,
-                CREATE: 'create_tax',
-                UPDATE: 'update_tax',
+                CREATE: 'create_invoice',
+                UPDATE: 'update_invoice',
                 DELETE: (id: number) => 'delete_invoice/' + id,
             }
         },

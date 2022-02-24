@@ -4,7 +4,7 @@
         v-model:value="searchValue"
         type="text"
         :class="customClass"
-        :placeholder="`${'Search for a ' + whichData}`"
+        :placeholder="`${whichData === 'Invoice' ? 'Search for an ' : 'Search for a ' + whichData}`"
         :loading="loading"
         @keyup="handleSearchStop"
         @input="handleSearchInput"
@@ -70,6 +70,12 @@ export default defineComponent({
         if(whichData.value === 'Brand' || whichData.value  === 'Category') {
           const results = searchData.value.filter((item) =>
               item.name.toLowerCase().indexOf(value.toLowerCase()) !== -1
+          )
+          context.emit('results', results)
+        }
+        if(whichData.value === 'Invoice') {
+          const results = searchData.value.filter((item) =>
+              item.invoice_number.toLowerCase().indexOf(value.toLowerCase()) !== -1
           )
           context.emit('results', results)
         }

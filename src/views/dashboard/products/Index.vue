@@ -51,7 +51,7 @@
       @delete="handleProductDelete"
   />
   <brand-category-modal
-      v-if="brandOrCategory"
+      v-if="showBrandCategoryModal"
       :show-modal="showBrandCategoryModal"
       :data-type="brandOrCategory"
       @closeModal="handleDetailsModalClose"
@@ -165,15 +165,15 @@ export default defineComponent({
     })
     const products = ref( [])
     const searchResults = ref( [])
-    const resetSearch = ref(null)
+    const resetSearch = ref("")
 
     onMounted(async () => {
       try{
         store.commit('spinner/SET_SPINNER_STATUS', true)
         const { data} = await axios.get(apiEndPoints().PRODUCTS.GET)
         products.value = data.map((item, index) => ({
-          description: item.description.toUpperCase(),
-          name: item.name.toUpperCase(),
+          description: item.description.toString().toUpperCase(),
+          name: item.name.toString().toUpperCase(),
           ...item,
           key: index
         }))
@@ -215,7 +215,7 @@ export default defineComponent({
         isViewMode.value = false
       },
       handleSearch(event) {
-        resetSearch.value = null
+        resetSearch.value = ""
         searchResults.value = event
       },
       handleOpenDeleteModal() {
@@ -233,7 +233,7 @@ export default defineComponent({
           store.commit('spinner/SET_SPINNER_STATUS', false)
           message.success('Product was deleted successfully')
           searchResults.value = []
-          resetSearch.value = ''
+          resetSearch.value = ""
         } catch (e) {
           store.commit('spinner/SET_SPINNER_STATUS', false)
           loading.value = false

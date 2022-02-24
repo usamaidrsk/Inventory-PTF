@@ -20,9 +20,11 @@ export function renderRouterLink (to: string, labelName: string, params = null )
     )
 }
 export function currencyValue(value: number): any {
-    let values = value.toString().replace(/[\D\s._-]+/g, '');
-    const numberValue = values ? parseInt(values, 10) : 0;
-    values = numberValue === 0 ? '' : numberValue.toLocaleString('en-US');
-    return values
+    if(value >= 0 ) {
+        let values = value.toString().replace(/[\D\s._-]+/g, '');
+        const numberValue = values ? parseInt(values, 10) : 0;
+        values = numberValue === 0 ? '' : numberValue.toLocaleString('en-US');
+        return `UGX ${values.length !== 0 ? values : "0.000"}`
+    } else return `UGX ${value}`
 }
 

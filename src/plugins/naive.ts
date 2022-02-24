@@ -23,7 +23,18 @@ import {
     NDropdown,
     NAvatar,
     NText,
-    NGridItem, NGrid, NDivider, NDataTable, NModal, NSelect, NInputNumber, NFormItemGi, NPopconfirm, NTabs, NTabPane,
+    NGridItem,
+    NGrid,
+    NDivider,
+    NDataTable,
+    NModal,
+    NSelect,
+    NInputNumber,
+    NFormItemGi,
+    NPopconfirm,
+    NTabs,
+    NTabPane,
+    NDynamicInput, NDatePicker, NCheckbox,
 } from 'naive-ui'
 
 const naive = create({
@@ -31,7 +42,8 @@ const naive = create({
         NConfigProvider,NButton, NCard, NRow, NCol, NForm, NFormItem, NInput, NMessageProvider,
         NA, NSpace, NSpin, NLayout, NLayoutContent, NLayoutFooter, NLayoutSider, NLayoutHeader,
         NIcon, NMenu, NSwitch, NDropdown, NAvatar, NText, NGrid, NGridItem, NDivider, NDataTable,
-        NModal, NSelect, NInputNumber, NFormItemGi, NPopconfirm, NTabs, NTabPane
+        NModal, NSelect, NInputNumber, NFormItemGi, NPopconfirm, NTabs, NTabPane, NDynamicInput, NDatePicker,
+        NCheckbox
     ]
 })
 
