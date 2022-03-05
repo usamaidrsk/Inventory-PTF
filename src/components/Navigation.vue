@@ -8,7 +8,7 @@
     >
       <h2 class="ml-4 mt-2 text-secondary font-bold text-current font-mono text-lg">PICK && PAY</h2>
       <div>
-        <n-menu mode="horizontal" class="mr-4" :inverted="inverted" :options="menuOptions" />
+        <n-menu mode="horizontal" class="mr-4" :inverted="inverted" :options="menuOptions" @update="handleOptionSelect"/>
       </div>
     </n-layout-header>
   </n-layout>
@@ -16,29 +16,23 @@
 
 <script>
 import { defineComponent } from 'vue'
-// import { useRouter } from 'vue-router'
-// import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 import { Notifications, LogOutOutline as LogoutIcon } from '@vicons/ionicons5'
-import { Email, UserAvatar, Password } from '@vicons/carbon'
+import { UserAvatar, Password } from '@vicons/carbon'
 import { renderIcon } from  '@/shared/utilz/Index'
-// import { useMessage } from 'naive-ui'
+import { useMessage } from 'naive-ui'
 
 export default defineComponent({
   setup () {
-    // const message = useMessage()
-    // const router = useRouter()
-    // const store = useStore()
-    // async function logout() {
-    //   this.setAuth(false)
-    //   store.commit('auth/setAuth', {login: false})
-    //   message.success("Logged out successfully")
-    //   await router.push({name: "signin"})
-    // }
-    // const renderLogoutBtn = ({logout}) => {
-    //   return  h(NButton, {
-    //         onClick: () => logout()},
-    //       'Logout')
-    // }
+    const message = useMessage()
+    const router = useRouter()
+    const store = useStore()
+    async function logout() {
+      store.commit('auth/setAuth', {login: false})
+      message.success("Logged out successfully")
+      await router.push({name: "signin"})
+    }
     const menuOptions = [
       {
         label: 'Notifications',
@@ -50,18 +44,17 @@ export default defineComponent({
         key: 'user-name',
         icon: renderIcon(UserAvatar),
         children: [
-          {
-            label: 'Change Email',
-            key: 'change-email',
-            icon: renderIcon(Email)
-          },
+          // {
+          //   label: 'Change Email',
+          //   key: 'change-email',
+          //   icon: renderIcon(Email)
+          // },
           {
             label: 'Change Password',
             key: 'change-password',
             icon: renderIcon(Password)
           },
           {
-            // label: renderLogoutBtn({logout}),
             label: 'Logout',
             key: 'logout',
             icon: renderIcon(LogoutIcon)
@@ -70,8 +63,13 @@ export default defineComponent({
       }
     ]
     return {
+      handleOptionSelect(key) {
+        if(key === "logout") {
+          logout()
+        }
+      },
       inverted: false,
-      menuOptions
+      menuOptions,
     }
   }
 })

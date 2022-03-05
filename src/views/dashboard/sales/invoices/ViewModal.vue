@@ -2,7 +2,7 @@
   <div>
     <n-modal :show="showViewModal">
       <n-card
-          style="width: 60%; height: 90%"
+          style="width: 65%; height: 90%"
           :bordered="false"
           size="huge"
           role="dialog"
@@ -26,7 +26,7 @@
               >Close</n-button>
             </div>
           </div>
-          <div>
+          <div :id="invoice.invoice_number">
             <div class="text-current font-mono text-lg font-semibold flex align-center">
               {{invoice.invoice_number}}
             </div>
@@ -88,15 +88,18 @@
               </div>
             </div>
             <n-divider/>
-            <div class="flex flex-row justify-end mt-4">
-              <div style="font-size: .9em;">
-                No. Items: <strong>{{invoice.items.length}}</strong><br/>
-                Discounts: <strong>{{currencyValue(invoice.totalDiscounts)}}</strong> <br/>
-                Tax Value: <strong>{{currencyValue(invoice.totalTaxValue)}}</strong><br/>
-                Profit Value: <strong>{{currencyValue(invoice.totalProfits)}}</strong><br/>
-                Total Amount: <strong>{{currencyValue(invoice.total_amount)}}</strong><br/>
-                Amount Paid: <strong>{{currencyValue(invoice.amount_paid)}}</strong> <br/>
-                Balance: <strong>{{currencyValue(invoice.balance)}}</strong>
+            <div class="flex flex-row justify-center mt-4 mb-2">
+              <div>
+                <div style="font-weight: 800; font-size: 1.4em">Invoice Summary</div>
+                <div style="font-size: .9em; text-align: center">
+                  No. Items: <strong>{{invoice.items.length}}</strong><br/>
+                  Discounts: <strong>{{currencyValue(invoice.totalDiscounts)}}</strong> <br/>
+                  Tax Value: <strong>{{currencyValue(invoice.totalTaxValue)}}</strong><br/>
+                  Profit Value: <strong>{{currencyValue(invoice.totalProfits)}}</strong><br/>
+                  Total Amount: <strong>{{currencyValue(invoice.total_amount)}}</strong><br/>
+                  Amount Paid: <strong>{{currencyValue(invoice.amount_paid)}}</strong> <br/>
+                  Balance: <strong>{{currencyValue(invoice.balance)}}</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -114,8 +117,7 @@ import {Pencil} from '@vicons/ionicons5'
 import {DocumentPdf, Delete, OverflowMenuHorizontal} from '@vicons/carbon'
 import {FileExcel} from '@vicons/fa'
 import {useStore} from "vuex"
-import {renderIcon} from "@/shared/utilz/Index";
-import { currencyValue } from "@/shared/utilz/Index";
+import {renderIcon, currencyValue, printPDF} from "@/shared/utilz/Index";
 
 export default defineComponent({
   emits: ['openEditModal', 'closeModal', 'openDeleteModal'],
@@ -229,7 +231,7 @@ export default defineComponent({
       loading,
       invoice,
       closeModal,
-      handleOptionSelect(key) {
+      async handleOptionSelect(key) {
         if(key === "edit") {
           delete invoice.value.totalDiscounts
           delete invoice.value.totalTaxValue
@@ -237,11 +239,15 @@ export default defineComponent({
           invoice.value.items.forEach(item => {
             delete item.invoice
           })
-          context.emit('openEditModal', invoice)
+          context.emit('openEditModal', invoice.value)
           closeModal()
         } else if(key === "delete") {
           closeModal()
-          context.emit('openDeleteModal', invoice)
+          context.emit('openDeleteModal', invoice.value)
+        } else if(key === "pdf") {
+          store.commit('spinner/SET_SPINNER_STATUS', true)
+          await printPDF(invoice.value.invoice_number, invoice.value.invoice_number)
+          store.commit('spinner/SET_SPINNER_STATUS', false)
         }
       },
       OverflowMenuHorizontal,

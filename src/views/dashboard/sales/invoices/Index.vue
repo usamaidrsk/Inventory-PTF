@@ -270,14 +270,14 @@ export default defineComponent({
       //
       },
       handleOpenDeleteModal(event) {
-        selectedInvoice.value = event.value
+        selectedInvoice.value = event
         showDeleteModal.value = true
       },
       handleOpenEditModal(event) {
         showEditorModal.value = true
         selectedInvoice.value = {
-          ...event.value,
-          items: event.value.items.map(itm => {
+          ...event,
+          items: event.items.map(itm => {
                 const x = {
                   ...itm,
                   item_id: itm.item_id.id,

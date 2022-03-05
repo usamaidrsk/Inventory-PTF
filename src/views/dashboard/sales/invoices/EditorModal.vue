@@ -328,9 +328,9 @@ export default defineComponent({
         if (!errors) {
           store.commit('spinner/SET_SPINNER_STATUS', true)
           loading.value = true
-          const {due_date, date} = formValue.value
+          const {due_date, date, customer} = formValue.value
           const postData = {
-            customer: formValue.value.customer.toString().toUpperCase(),
+            customer: customer ? customer.toString().toUpperCase() : "",
             date: moment(formValue.value.date).format("YYYY-MM-DD"),
             due_date: due_date < date ? moment(date).format("YYYY-MM-DD") :
                 moment(due_date).format("YYYY-MM-DD"),
