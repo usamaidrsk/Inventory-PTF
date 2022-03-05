@@ -32,21 +32,6 @@ export function currencyValue(value: number): any {
     } else return `UGX ${value}`
 }
 
-
-// export function printPDF(id: string, name = "") {
-//     const pdf = new jsPDF();
-//     const element = document.getElementById(id);
-//     if(element) {
-//         const width= Number(element.style.width);
-//         const height = Number(element.style.height);
-//         html2canvas(element).then(canvas => {
-//             const image = canvas.toDataURL('image/png');
-//             pdf.addImage(image, 'JPEG', 15, 40, width, height);
-//             pdf.save(name + " " + moment(new Date()).format('LL') + '.pdf');
-//         });
-//     }
-// }
-
 export async function printPDF(Component: HTMLElement, name = "") {
     await html2canvas(Component).then((canvas) => {
         const componentWidth = Component.offsetWidth
@@ -64,6 +49,6 @@ export async function printPDF(Component: HTMLElement, name = "") {
         pdf.internal.pageSize.height = componentHeight
 
         pdf.addImage(imgData, 'PNG', 0, 0, componentWidth, componentHeight)
-        pdf.save(name + " " + moment(new Date()).format('LL') + '.pdf')
+        pdf.save(`${name} ${moment(new Date()).format('LL')}.pdf`)
     })
 }

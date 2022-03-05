@@ -330,7 +330,7 @@ export default defineComponent({
           loading.value = true
           const {due_date, date, customer} = formValue.value
           const postData = {
-            customer: customer ? customer.toString().toUpperCase() : "",
+            customer: customer ? customer : "",
             date: moment(formValue.value.date).format("YYYY-MM-DD"),
             due_date: due_date < date ? moment(date).format("YYYY-MM-DD") :
                 moment(due_date).format("YYYY-MM-DD"),
@@ -352,14 +352,13 @@ export default defineComponent({
           try {
             const AXIOS_METHOD = isEditing.value ? 'patch' : 'post'
             const {data} = await axios[AXIOS_METHOD](apiEndPoints().SALES.INVOICE[isEditing.value ? 'UPDATE' : 'CREATE'],postData)
-            // context.emit("saveProduct", {...data, ...isEditing.value ? {key: stateProps.product.value.key} : {}})
-            console.log(data)
+            context.emit("invoiceAction", {...data, ...isEditing.value ? {key: stateProps.invoice.value.key} : {}})
             store.commit('spinner/SET_SPINNER_STATUS', false)
             loading.value = false
             message.success(`Invoice was ${isEditing.value ? 'edited' : 'created'} successfully`)
             clearForm()
-            closeModal()
           } catch (e) {
+            console.log(e)
             store.commit('spinner/SET_SPINNER_STATUS', false)
             loading.value = false
             message.warning(e.response?.data?.detail || "Something went wrong")
@@ -401,13 +400,18 @@ export default defineComponent({
       formValue.value.items[index].unit_price = selectedItem[0].selling_price >= 500 ? selectedItem[0].selling_price : 500
       formValue.value.items[index].discount = selectedItem[0].discount
       formValue.value.items[index].units = 1
-      isFistInitializer.value = false
+      if(isFistInitializer.value) isFistInitializer.value = false
     }
 
     const renderCardTitle = ({ isEditMode, invoice }) => {
       return h('div', {}, [
         h('div', {class: "flex flex-row"}, [
-          h('h1',{class: "flex-none font-semibold"}, `${ isEditMode ? invoice.invoice_number : 'New Invoice'}`),
+          h('div',{}, [
+              h('h1', {class: "flex-none font-semibold"}, `${ isEditMode ? invoice.invoice_number : 'New Invoice'}`),
+            isEditMode ? h('p', {class: "flex-none font-semibold", style: {color: 'red', fontSize: ".5em"}},
+                "This is not an advised practice, beacuse constraints such as tax, discount percentages " +
+                "might have changed from the time of creating this invoice") : "",
+          ]),
           h('div', {class: "justify-self-end ml-auto"}, [
             h(NButton, {color: "#0aa699",
                   disabled: loading.value || !formValue.value.items[0]?.item_id, onClick: () => createUpdateInvoice()},
@@ -484,43 +488,36 @@ export default defineComponent({
         createItemIndex.value = index
       },
       generateSubTotals: (item, discount, units, unit_price, index) => {
-        let discountVal = ((
-            (isFistInitializer.value && isEditing.value) ? formValue.value.items[index].discount : discount)
-            * unit_price) / 100
-        let amount = (isFistInitializer.value && isEditing.value) ?
-            formValue.value.items[index].subtotal : (unit_price - discountVal) * units
-        let exclusiveTax = formValue.value.items[index].exclusiveTax
+        let discountVal = (discount * unit_price) / 100
+        let amount = (unit_price - discountVal) * units
+        let exclusiveTax = 0
         let inclusiveTax = 0
-        const taxRevenue = formValue.value.items[index].taxRevenue
-        let profit = formValue.value.items[index].profit
-        if(!(isEditing.value && isFistInitializer.value)) {
-          if(item.tax.length > 0) {
-            item.tax.forEach(tax => {
-              if(tax.type) {
-                const revenue = {
-                  id: tax.id,
-                  amount: ((tax.value *  unit_price) / 100) * units,
-                  type: tax.type
-                }
-                if(revenue.type.toLowerCase() === "exclusive") {
-                  amount += revenue.amount
-                  exclusiveTax += revenue.amount
-                } else inclusiveTax += revenue.amount
-                taxRevenue.push(revenue)
+
+        if(item.tax.length > 0) {
+          item.tax.forEach((tax, idx) => {
+            if (tax.id) {
+              const revenue = {
+                id: tax.id,
+                amount: ((tax.value * unit_price) / 100) * units,
+                type: tax.type
               }
-            })
-          }
-          profit = (amount - exclusiveTax - inclusiveTax) - (item.buying_price * units)
-          formValue.value.items[index].taxRevenue = taxRevenue
-          formValue.value.items[index].subtotal = amount
-          formValue.value.items[index].profit = profit
+              formValue.value.items[index].taxRevenue[idx] = revenue
+              if (revenue.type.toLowerCase() === "exclusive") {
+                amount += revenue.amount
+                exclusiveTax += revenue.amount
+              } else inclusiveTax += revenue.amount
+            }
+          })
         }
+
+        formValue.value.items[index].subtotal = amount
+        formValue.value.items[index].profit = (amount - exclusiveTax - inclusiveTax) - (item.buying_price * units)
         formValue.value.items[index].exclusiveTax = exclusiveTax
         formValue.value.items[index].discountValue = discountVal
 
         return `${
           exclusiveTax > 0 ? `Tax: ${currencyValue(exclusiveTax)} <br /> ` : ''}
-          Profit: ${currencyValue(profit)} <br /> Total: ${currencyValue(amount)}`;
+          Profit: ${currencyValue(formValue.value.items[index].profit)} <br /> Total: ${currencyValue(amount)}`;
       },
       generateStatement: () =>  {
         let totalExclusive = 0
@@ -536,7 +533,6 @@ export default defineComponent({
 
         formValue.value.total_amount = totalAmount
         formValue.value.balance = totalAmount - formValue.value.amount_paid
-
         formValue.value.paid = formValue.value.balance <= 0
 
         return `No. Items: ${formValue.value.items.length} <br />` +
@@ -572,7 +568,7 @@ export default defineComponent({
         showCreateProductModal.value = false
       },
       handleAnyFormUpdates() {
-        isFistInitializer.value = false
+        if(isFistInitializer.value) isFistInitializer.value = false
       },
       rules: {
         customer: {},

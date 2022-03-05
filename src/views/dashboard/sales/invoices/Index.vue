@@ -206,25 +206,61 @@ export default defineComponent({
       }
     })
 
-    onMounted(async () => {
-      store.commit('spinner/SET_SPINNER_STATUS', true)
-      try{
-        const { data} = await axios.get(apiEndPoints().SALES.INVOICE.GET)
-        invoices.value = data.map((item, index) => ({
-          ...item,
-          invoice_number: item.invoice_number.toUpperCase(),
-          date: moment(item.date).format("YYYY-MM-DD"),
-          due_date: moment(item.date).format("YYYY-MM-DD"),
-          number_of_items: item.items,
-          amount: item.total_amount,
-          key: index
-        }))
+    const setInvoices = (data = null, invoice = null) => {
+      try {
+        if (data) {
+          invoices.value = data.map((item, index) => ({
+            ...item,
+            invoice_number: item.invoice_number.toUpperCase(),
+            date: moment(item.date).format("YYYY-MM-DD"),
+            due_date: moment(item.date).format("YYYY-MM-DD"),
+            number_of_items: item.items,
+            amount: item.total_amount,
+            key: index
+          }))
+        } else if (invoice) {
+          if (isEditingMode.value) {
+            invoices.value.forEach((inv, index) => {
+              if (inv.id === invoice.id) {
+                invoices.value[index] = {
+                  ...invoice,
+                  invoice_number: invoice.invoice_number.toUpperCase(),
+                  date: moment(invoice.date).format("YYYY-MM-DD"),
+                  due_date: moment(invoice.date).format("YYYY-MM-DD"),
+                  number_of_items: invoice.items,
+                  amount: invoice.total_amount,
+                  key: invoice.key
+                }
+              }
+            })
+            selectedInvoice.value = null
+            isEditingMode.value = false
+          }
+          invoices.value.push({
+            ...invoice,
+            invoice_number: invoice.invoice_number.toUpperCase(),
+            date: moment(invoice.date).format("YYYY-MM-DD"),
+            due_date: moment(invoice.date).format("YYYY-MM-DD"),
+            number_of_items: invoice.items,
+            amount: invoice.total_amount,
+            key: invoices.value.length + 1
+          })
+        }
         paidInvoices.value = invoices.value.filter(x => x.paid === true)
         unPaidInvoices.value = invoices.value.filter(x => x.paid === false)
         overDueInvoices.value = unPaidInvoices.value.filter(x =>
             moment(x.due_date).format("YYYY-MM-DD") > moment(new Date()).format("YYYY-MM-DD"))
         dueInvoices.value = unPaidInvoices.value.filter(x =>
             moment(x.due_date).format("YYYY-MM-DD") === moment(new Date()).format("YYYY-MM-DD"))
+      } catch (e) {
+        console.log(e)
+      }
+    }
+    onMounted(async () => {
+      store.commit('spinner/SET_SPINNER_STATUS', true)
+      try{
+        const { data} = await axios.get(apiEndPoints().SALES.INVOICE.GET)
+        setInvoices(data)
       } catch (e) {
         message.warning(e.response?.data?.detail || "Something went wrong")
       }
@@ -266,8 +302,9 @@ export default defineComponent({
         selectedInvoice.value = null
         showDeleteModal.value = false
       },
-      handleInvoiceAction() {
-      //
+      handleInvoiceAction(event) {
+        setInvoices(null, event)
+        showEditorModal.value = false
       },
       handleOpenDeleteModal(event) {
         selectedInvoice.value = event
@@ -286,12 +323,13 @@ export default defineComponent({
                     tax: []
                   }
                 }
-                itm.item_id.tax.forEach((tx, i) => {
-                  x.item.tax[i] = {}
-                  x.item.tax[i].id = tx.id
-                  x.item.tax[i].description = tx.description
-                  x.item.tax[i].value = tx.value
-                  x.item.tax[i].type = tx.type
+                x.item.tax = []
+                itm.tax_revenue.forEach(tx => {
+                  x.item.tax.push({
+                    id: tx.id,
+                    value: ((tx.amount / x.units) * 100) / x.unit_price,
+                    type: tx.type
+                  })
                 })
             return x
           })}

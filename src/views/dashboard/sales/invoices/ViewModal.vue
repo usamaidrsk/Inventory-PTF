@@ -26,13 +26,13 @@
               >Close</n-button>
             </div>
           </div>
-          <div :id="invoice.invoice_number">
+          <div :id="invoice.invoice_number" class="px-4">
             <div class="text-current font-mono text-lg font-semibold flex align-center">
               {{invoice.invoice_number}}
             </div>
             <n-divider/>
             <div style="font-size: .9em;">
-              Customer: <strong>{{invoice.customer ? invoice.customer: "No customer was provided"}}</strong><br/>
+              Customer: <strong>{{invoice.customer ? invoice.customer.toUpperCase() : "No customer was provided"}}</strong><br/>
               Date: <strong>{{invoice.date}}</strong><br/>
               Paid: <strong>{{invoice.paid ? "Paid" : "Not Paid"}}</strong><br/>
               Due Date: <strong>{{invoice.due_date}}</strong><br/>
@@ -58,7 +58,7 @@
                         class=" text-slate-500 font-thin text-ellipsis"
                         style="font-size: .8em;"
                     >
-                      {{ item.item_id.description }}
+                      {{ item.item_id.description || '############' }}
                     </div>
                   </div>
                   <div>
@@ -88,10 +88,10 @@
               </div>
             </div>
             <n-divider/>
-            <div class="flex flex-row justify-center mt-4 mb-2">
+            <div class="flex flex-row justify-center mt-4">
               <div>
                 <div style="font-weight: 800; font-size: 1.4em">Invoice Summary</div>
-                <div style="font-size: .9em; text-align: center">
+                <div style="font-size: .9em; text-align: center; margin-bottom: 2em">
                   No. Items: <strong>{{invoice.items.length}}</strong><br/>
                   Discounts: <strong>{{currencyValue(invoice.totalDiscounts)}}</strong> <br/>
                   Tax Value: <strong>{{currencyValue(invoice.totalTaxValue)}}</strong><br/>
@@ -115,7 +115,7 @@ import axios from '@/plugins/axios'
 import {useMessage} from "naive-ui";
 import {Pencil} from '@vicons/ionicons5'
 import {DocumentPdf, Delete, OverflowMenuHorizontal} from '@vicons/carbon'
-import {FileExcel} from '@vicons/fa'
+// import {FileExcel} from '@vicons/fa'
 import {useStore} from "vuex"
 import {renderIcon, currencyValue, printPDF} from "@/shared/utilz/Index";
 
@@ -189,10 +189,10 @@ export default defineComponent({
           invoice.value.totalDiscounts += (item.discount * item.unit_price)/ 100
           item.tax_revenue.forEach(tax => {
             if(tax.type.toLowerCase() === "exclusive") {
-              invoice.value.totalTaxValue  += tax.amount
               item.exclusiveTaxVal += tax.amount
             }
           })
+          invoice.value.totalTaxValue  += item.exclusiveTaxVal
         })
         store.commit('spinner/SET_SPINNER_STATUS', false)
       } catch (e) {
@@ -218,11 +218,6 @@ export default defineComponent({
           icon: renderIcon(DocumentPdf)
         },
         {
-          label: 'Excel',
-          key: 'excel',
-          icon: renderIcon(FileExcel)
-        },
-        {
           label: 'Delete',
           key: 'delete',
           icon: renderIcon(Delete)
@@ -246,7 +241,10 @@ export default defineComponent({
           context.emit('openDeleteModal', invoice.value)
         } else if(key === "pdf") {
           store.commit('spinner/SET_SPINNER_STATUS', true)
-          await printPDF(invoice.value.invoice_number, invoice.value.invoice_number)
+          await printPDF(
+              document.getElementById(invoice.value.invoice_number),
+              invoice.value.invoice_number
+          )
           store.commit('spinner/SET_SPINNER_STATUS', false)
         }
       },
