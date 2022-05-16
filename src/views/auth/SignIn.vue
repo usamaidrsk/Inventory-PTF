@@ -1,6 +1,6 @@
 <template>
-  <div class="container">
-    <n-card title="Sign In" size="medium">
+  <div class="flex flex-col justify-center items-center w-screen h-screen">
+    <n-card title="Sign In" size="large">
       <n-form
           :label-width="80"
           :model="formValue"
@@ -30,7 +30,8 @@
                     :disabled="loading"
                     @click.prevent="signIn()"
                     type="primary"
-                    color="#0aa699"
+                    color="#fff"
+                    :style="{backgroundColor: '#fff', color: '#0aa699'}"
                 >
                   Sign In
                 </n-button>
